@@ -1,0 +1,46 @@
+menu "SPI NAND Support"
+
+config DM_SPI_NAND_FLASH
+	bool "Enable Driver Model for SPI NAND flash"
+	depends on DM && DM_SPI
+	help
+	  Enable driver model for SPI NAND flash. The SPI NAND flash interfaces
+	  (spi_nand_flash_probe(), spi_nand_flash_write(), etc.) is then
+	  implemented by the SPI NAND flash uclass. There is one standard
+	  SPI NAND flash driver which knows how to probe most chips
+	  supported by U-Boot. The uclass interface is defined in
+	  include/spi_flash.h, but is currently fully compatible
+	  with the old interface to avoid confusion and duplication
+	  during the transition parent. SPI and SPI NAND flash must be
+	  enabled together (it is not possible to use driver model
+	  for one and not the other).
+
+config SPI_NAND
+	bool "SPI NAND support"
+	default n
+	select CMD_SPI_NAND
+	help
+	  Choose this option to add support
+	  for SPI NAND driver
+
+config SPI_NAND_USE_SPI_NOR_RD_PROT
+	bool "Use SPI NOR flash 03h/0bh read protocol"
+	default n
+	help
+	  Micron M79A SPI NAND support implement 03h/0Bh command, as is done
+	  with SPI NOR for compatibility.
+
+config SPI_NAND_FLASH_MTD
+	bool "SPI NAND Flash MTD support"
+	default n
+	depends on SPI_NAND
+	help
+	  Enable the MTD support for spi nand flash layer, this adapter is
+	  for translating mtd_read/mtd_write commands into spi_flash_read
+	  and write commands. It is not intended to use it within sf_cmd or
+	  the SPI nand flash subsystem. Such an adapter is needed for
+	  subsystems like UBI which can only operate on top of the MTD layer.
+
+	  If unsure, say N
+
+endmenu # menu "SPI NAND Support"

@@ -1,0 +1,28 @@
+The file tim.txt/img-1.txt/img-2.txt kept in the directory are used to build the secondary flash-image.
+The secondary image is supposed to be burned at SPI flash on its 2Mbyte offset. If the bootROM detects
+the primary image at offset 0x0 on the SPI flash is corrupted, it will try to pick up the secondary boot
+image at the 2Mbyte offset.
+
+To build the secondary image, please replace the tim.txt/img-1.txt/img-2.txt under the directory of
+tools/wtp/untrusted with the ones in this directory and rebuild your flash-image.bin.
+
+To burn the secondary flash-image.bin, you will not be ablel to use the bubt tool which burns the image
+at offset 0x0. Instead please use the sf update command to burn the image:
+
+   1. Load the image to memory
+	tftp 0x2000000 flash-image.bin.secondary
+   2. Burn the image to flash
+	sf probe
+	sf update 0x2000000   0x200000    0x100000
+                    |            |           |
+                  mem addr   spi offset   image size
+
+To confirm the secondary boot image is working fine - just for the testing purpose, you can corrupt
+the first boot image on the SPI by doing:
+
+    sf probe
+    sf erase 0x0 0x100000  ;erase the first 1MB of the SPI flash
+
+Then reboot the system, you'll find the system still boots sucessfully - by picking up the boot image
+at 2MB offset from the SPI flash.
+

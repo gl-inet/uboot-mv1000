@@ -1,0 +1,25 @@
+#
+# This file is the input for A3700 DDR porting tool,
+# each item is one parameter for DDR topology, which will be parsed by
+# DDR tool and generate DDR register list accordingly.
+# Supported Marvell boards:
+#       DDR4 1CS : ESPRESSObin (1GB)
+#
+
+#DDR4
+ddr_type=1
+
+#1CS
+ddr_cs_mask=1
+
+#DDR4_2400R
+ddr_speedbin_index=10
+
+#16BIT
+ddr_bus_width_index=2
+
+#8Gbits (1GB)
+ddr_mem_size_index=4
+
+#custom ddr setting
+preset_ddr_conf=ddr4-1cs-1g.txt
