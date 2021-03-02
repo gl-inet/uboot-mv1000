@@ -12,6 +12,7 @@
 #include <cli.h>
 #include <console.h>
 #include <version.h>
+#include <gl_api.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -62,7 +63,8 @@ void main_loop(void)
 	s = bootdelay_process();
 	if (cli_process_fdt(&s))
 		cli_secure_boot_cmd(s);
-
+	
+	check_button_is_press();
 	autoboot_command(s);
 
 	cli_loop();

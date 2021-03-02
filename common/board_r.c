@@ -67,7 +67,7 @@
 #endif
 #include <efi_loader.h>
 
-#include <asm/gpio.h>
+#include <gl_api.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -738,37 +738,6 @@ static int run_main_loop(void)
 	return 0;
 }
 
-static int all_led_on(void)
-{
-	gpio_request(11, "vpn");
-	gpio_direction_output(11, 0);
-	gpio_free(11);
-
-	gpio_request(12, "wifi");
-	gpio_direction_output(12, 0);
-	gpio_free(12);
-
-	gpio_request(13, "power");
-	gpio_direction_output(13, 0);
-	gpio_free(13);
-	mdelay(2000);
-
-	return 0;
-}
-
-static int power_led_on(void)
-{
-	gpio_request(11, "vpn");
-	gpio_direction_output(11, 1);
-	gpio_free(11);
-
-	gpio_request(12, "wifi");
-	gpio_direction_output(12, 1);
-	gpio_free(12);
-
-	return 0;
-}
-
 /*
  * Over time we hope to remove these functions with code fragments and
  * stub funtcions, and instead call the relevant function directly.
@@ -925,7 +894,7 @@ static init_fnc_t init_sequence_r[] = {
 #if defined(CONFIG_MICROBLAZE) || defined(CONFIG_AVR32) || defined(CONFIG_M68K)
 	timer_init,		/* initialize timer */
 #endif
-	all_led_on,
+	mv_gpio_request,
 #if defined(CONFIG_LED_STATUS)
 	initr_status_led,
 #endif

@@ -278,7 +278,7 @@ int mv88e6xxx_get_link_status(struct mv88e6xxx_dev *dev, int port)
 		printf("Link: UP, ");
 	} else {
 		printf("Link: Down\n");
-		return 0;
+		return 1;
 	}
 
 	if (ret & PORT_STATUS_DUPLEX)
@@ -401,6 +401,12 @@ int mv88e6xxx_initialize(const void *blob)
 					 PORT_BASE_VLAN,
 					 soho_dev.port_mask & ~BIT(port));
 
+		if(port==1){
+		mv88e6xxx_write_register(&soho_dev,
+					 REG_PORT(1),
+					 PORT_BASE_VLAN,
+					 1);
+		}
 		if (port == soho_dev.cpu_port)
 			continue;
 
@@ -532,6 +538,7 @@ static int do_sw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		}
 		port = (int)simple_strtoul(argv[2], NULL, 16);
 		ret = mv88e6xxx_get_link_status(dev, port);
+		return ret;
 		break;
 
 	case SW_NA:

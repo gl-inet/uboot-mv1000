@@ -17,8 +17,7 @@ mkdir -p ~/uboot-mv1000/toolchain
 cd ~/uboot-mv1000/toolchain
 wget https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
 tar -xvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
-export STAGING_DIR=~/uboot-mv1000/toolchain/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
-export CROSS_COMPILE=~/uboot-mv1000/toolchain/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+export PATH=$PATH:~/uboot-mv1000/toolchain/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin
 ```
 
 ### Compile uboot:

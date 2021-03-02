@@ -22,7 +22,7 @@
 
 
 #ifndef	CONFIG_NET_RETRY_COUNT
-# define ARP_TIMEOUT_COUNT	5	/* # of timeouts before giving up  */
+# define ARP_TIMEOUT_COUNT	1	/* # of timeouts before giving up  */
 #else
 # define ARP_TIMEOUT_COUNT	CONFIG_NET_RETRY_COUNT
 #endif

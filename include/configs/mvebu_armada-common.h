@@ -58,23 +58,27 @@
 					"image_part=1\0" \
 					"image_dir=/\0" \
 					"image_name=Image\0" \
-					"fdt_name=image-armada-gl-mv1000.dtb\0" \
+					"fdt_name=armada-gl-mv1000-emmc.dtb\0" \
 					"image_ramfs=openwrt-mvebu-cortexa53-gl-mv1000-initramfs-kernel.bin\0" \
 					"bootscript=load mmc ${mmc_dev}:${image_part} ${loadaddr} boot.scr && echo \"   Running bootscript from mmc ...\"; source ${loadaddr}\0" \
 					"clear_args=setenv bootargs \"${console}\"\0" \
 					"args_mmc=setenv bootargs \"${console} root=/dev/mmcblk0p2 rw rootwait\"\0" \
 					"args_sd=setenv bootargs \"${console} root=/dev/mmcblk1p2 rw rootwait\"\0" \
 					"args_usb=setenv bootargs \"${console} root=/dev/sda2 rw rootwait\"\0" \
-					"boot_mmc=echo \"   Booting from mmc ...\"; run clear_args; run args_mmc; run load_mmc; booti ${kernel_addr} - ${fdt_addr}\0" \
-					"boot_mtd=echo \"   Booting from nor ...\"; run clear_args; run load_mtd; bootm $kernel_addr - $fdt_addr\0" \
-					"boot_sd=echo \"   Booting from sd ...\"; run clear_args; run args_sd; run load_sd; booti $kernel_addr - $fdt_addr\0" \
-					"boot_usb=echo \"   Booting from usb ...\"; run clear_args; run args_usb; run load_usb; booti $kernel_addr - $fdt_addr\0" \
-					"boot_tftp=echo \"   Booting from tftp ...\"; run clear_args; run load_tftp; booti $kernel_addr - $fdt_addr\0" \
-					"load_mmc=load mmc ${mmc_dev}:${image_part} ${fdt_addr} ${image_dir}${fdt_name}; load mmc ${mmc_dev}:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
+					"boot_mmc=echo \"   Booting from mmc ...\"; run clear_args; run args_mmc; run load_mmc && booti ${kernel_addr} - ${fdt_addr}\0" \
+					"boot_mtd=echo \"   Booting from nor ...\"; run clear_args; run load_mtd && bootm $kernel_addr - $fdt_addr\0" \
+					"boot_sd=echo \"   Booting from sd ...\"; run clear_args; run args_sd; run load_sd && booti $kernel_addr - $fdt_addr\0" \
+					"boot_usb=echo \"   Booting from usb ...\"; run clear_args; run args_usb; run load_usb && booti $kernel_addr - $fdt_addr\0" \
+					"boot_tftp=echo \"   Booting from tftp ...\"; run clear_args; run load_tftp && booti $kernel_addr - $fdt_addr\0" \
+					"load_mmc=load mmc ${mmc_dev}:${image_part} ${fdt_addr} ${image_dir}${fdt_name} && load mmc ${mmc_dev}:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
 					"load_mtd=sf probe; sf read 0x4ff0000 0x100000 0x400000\0" \
-					"load_sd=load mmc ${sd_dev}:${image_part} ${fdt_addr} ${image_dir}${fdt_name}; load mmc ${sd_dev}:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
-					"load_usb=usb start; load usb 0:${image_part} ${fdt_addr} ${image_dir}${fdt_name}; load usb 0:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
-					"load_tftp=tftpboot $fdt_addr ${image_dir}${fdt_name}; tftpboot $kernel_addr ${image_dir}${image_ramfs}\0"
+					"load_sd=load mmc ${sd_dev}:${image_part} ${fdt_addr} ${image_dir}${fdt_name} && load mmc ${sd_dev}:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
+					"load_usb=usb start; load usb 0:${image_part} ${fdt_addr} ${image_dir}${fdt_name} && load usb 0:${image_part} ${kernel_addr} ${image_dir}${image_name}\0" \
+					"load_tftp=tftpboot $fdt_addr ${image_dir}${fdt_name} && tftpboot $kernel_addr ${image_dir}${image_ramfs}\0" \
+					"lu=bubt flash-image.bin spi tftp\0" \
+					"lf=tftpboot openwrt-gl-mv1000.bin && mmc dev 0 && mmc erase 0x0 0x109800 && mmc write $kernel_addr 0x0 0x32000\0"
+
+/*run lf 100M firmware limited*/
 
 #define CONFIG_BOOTCOMMAND	"run bootscript; " \
 					"run boot_mmc; " \

@@ -211,6 +211,7 @@ int env_import(const char *buf, int check)
 
 		if (crc32(0, ep->data, ENV_SIZE) != crc) {
 			set_default_env("!bad CRC");
+			saveenv();
 			return 0;
 		}
 	}
@@ -220,6 +221,7 @@ int env_import(const char *buf, int check)
 	if (ret) {
 		error("Failed to decrypt env!\n");
 		set_default_env("!import failed");
+		saveenv();
 		return ret;
 	}
 

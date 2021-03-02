@@ -108,6 +108,11 @@
 #include "sntp.h"
 #endif
 
+#include "../httpd/uipopt.h"
+#include "../httpd/uip.h"
+#include "../httpd/uip_arp.h"
+#include "httpd.h"
+#include <gl_api.h>
 DECLARE_GLOBAL_DATA_PTR;
 
 /** BOOTP EXTENTIONS **/
@@ -203,6 +208,12 @@ static int net_check_prereq(enum proto_t protocol);
 static int net_try_count;
 
 int __maybe_unused net_busy_flag;
+unsigned char *webfailsafe_data_pointer = NULL;
+int webfailsafe_is_running = 0;
+int webfailsafe_ready_for_upgrade = 0;
+int webfailsafe_upgrade_type = WEBFAILSAFE_UPGRADE_TYPE_FIRMWARE;
+extern int webfailsafe_post_done;
+void NetReceiveHttpd(volatile uchar * inpkt, int len);
 
 /**********************************************************************/
 
@@ -394,6 +405,7 @@ void net_init(void)
 int net_loop(enum proto_t protocol)
 {
 	int ret = -EINVAL;
+	int wait_time = 0;
 
 	net_restarted = 0;
 	net_dev_exists = 0;
@@ -479,6 +491,9 @@ restart:
 			ping_start();
 			break;
 #endif
+		case HTTPD:
+			HttpdStart();
+			break;
 #if defined(CONFIG_CMD_NFS)
 		case NFS:
 			nfs_start();
@@ -551,7 +566,10 @@ restart:
 		 *	Most drivers return the most recent packet size, but not
 		 *	errors that may have happened.
 		 */
-		eth_rx();
+		if(eth_rx() > 0){
+			if(protocol == HTTPD)
+			  HttpdHandler();
+		}
 
 		/*
 		 *	Abort if ctrl-c was pressed.
@@ -559,7 +577,8 @@ restart:
 		if (ctrlc()) {
 			/* cancel any ARP that may not have completed */
 			net_arp_wait_packet_ip.s_addr = 0;
-
+			if(protocol == HTTPD)
+			  HttpdStop();
 			net_cleanup_loop();
 			eth_halt();
 			/* Invalidate the last protocol */
@@ -572,7 +591,26 @@ restart:
 			ret = -EINTR;
 			goto done;
 		}
+		if (protocol == HTTPD) {
+		if(!webfailsafe_ready_for_upgrade)
+		  net_state = NETLOOP_CONTINUE;
+		else
+		  net_state = NETLOOP_SUCCESS;
 
+#if 1
+			//workaround for some case we can't receive uip_acked
+			//just force upgrade
+			if(webfailsafe_post_done && !webfailsafe_ready_for_upgrade){
+				if(wait_time == 0)
+					wait_time = get_timer(0);
+				if((get_timer(0) - wait_time) > 1000){
+					//force update
+					printf("ack timeout force upgrade cost time= %ld\n",(get_timer(0) - wait_time));
+					webfailsafe_ready_for_upgrade = 1;
+				}
+			}
+#endif
+		}
 		/*
 		 *	Check for a timeout, and run the timeout handler
 		 *	if we have one.
@@ -601,6 +639,7 @@ restart:
 			x = time_handler;
 			time_handler = (thand_f *)0;
 			(*x)();
+			return -1;
 		}
 
 		if (net_state == NETLOOP_FAIL)
@@ -618,6 +657,17 @@ restart:
 				       net_boot_file_size, net_boot_file_size);
 				setenv_hex("filesize", net_boot_file_size);
 				setenv_hex("fileaddr", load_addr);
+				if(protocol == HTTPD){
+					if(do_http_upgrade(net_boot_file_size,webfailsafe_upgrade_type) < 0){
+						HttpdStop();
+						goto restart;
+					}
+					else{
+						HttpdDone();
+						do_reset( NULL,0,0,NULL );
+						printf("reboot fail\n");
+					}
+				}
 			}
 			if (protocol != NETCONS)
 				eth_halt();
@@ -1047,7 +1097,10 @@ void net_process_received_packet(uchar *in_packet, int len)
 	/* too small packet? */
 	if (len < ETHER_HDR_SIZE)
 		return;
-
+	if(webfailsafe_is_running){
+		NetReceiveHttpd(in_packet,len);
+		return;
+	}
 #if defined(CONFIG_API) || defined(CONFIG_EFI_LOADER)
 	if (push_packet) {
 		(*push_packet)(in_packet, len);
@@ -1291,6 +1344,14 @@ static int net_check_prereq(enum proto_t protocol)
 		}
 		goto common;
 #endif
+#if defined(CONFIG_CMD_NET)
+	case HTTPD:
+		if (net_httpd_ip.s_addr == 0) {
+			puts("*** ERROR: httpd address not given\n");
+			return 1;
+		}
+		goto common;
+#endif
 #if defined(CONFIG_CMD_SNTP)
 	case SNTP:
 		if (net_ntp_server.s_addr == 0) {
@@ -1318,7 +1379,7 @@ static int net_check_prereq(enum proto_t protocol)
 			return 1;
 		}
 #if	defined(CONFIG_CMD_PING) || defined(CONFIG_CMD_SNTP) || \
-	defined(CONFIG_CMD_DNS)
+	defined(CONFIG_CMD_DNS) || defined(CONFIG_CMD_NET)
 common:
 #endif
 		/* Fall through */

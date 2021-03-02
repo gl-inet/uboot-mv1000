@@ -7,6 +7,7 @@ PATCHLEVEL = 03
 SUBLEVEL =
 EXTRAVERSION =
 NAME =
+export CROSS_COMPILE = aarch64-linux-gnu-
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
@@ -695,6 +696,7 @@ libs-y += test/
 libs-y += test/dm/
 libs-$(CONFIG_UT_ENV) += test/env/
 libs-$(CONFIG_UT_OVERLAY) += test/overlay/
+libs-y += httpd/
 
 libs-y += $(if $(BOARDDIR),board/$(BOARDDIR)/)
 

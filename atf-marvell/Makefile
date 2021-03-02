@@ -39,6 +39,7 @@ VERSION_MINOR			:= 3
 
 CURRPATH := $(shell pwd)
 
+export CROSS_COMPILE = aarch64-linux-gnu-
 export BL33 = $(CURRPATH)/../u-boot.bin
 export WTP = $(CURRPATH)/A3700-utils-marvell
 

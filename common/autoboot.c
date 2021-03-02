@@ -14,6 +14,7 @@
 #include <menu.h>
 #include <post.h>
 #include <u-boot/sha256.h>
+#include <gl_api.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -174,6 +175,7 @@ static int passwd_abort(uint64_t etime)
 		}
 	} while (!abort && get_ticks() <= etime);
 
+	puts("\n\n");
 	return abort;
 }
 #endif
@@ -188,11 +190,18 @@ static int __abortboot(int bootdelay)
 	uint64_t etime = endtick(bootdelay);
 
 #  ifdef CONFIG_AUTOBOOT_PROMPT
+	char *str=getenv("bootstopkey");
+
+#  ifdef CONFIG_AUTOBOOT_STOP_STR
+	if (str == NULL)
+		str = CONFIG_AUTOBOOT_STOP_STR;
+#  endif
+
 	/*
 	 * CONFIG_AUTOBOOT_PROMPT includes the %d for all boards.
 	 * To print the bootdelay value upon bootup.
 	 */
-	printf(CONFIG_AUTOBOOT_PROMPT, bootdelay);
+	printf(CONFIG_AUTOBOOT_PROMPT, str, bootdelay);
 #  endif
 
 	abort = passwd_abort(etime);
@@ -341,9 +350,18 @@ const char *bootdelay_process(void)
 
 void autoboot_command(const char *s)
 {
+	char *tmp;
+	int tftp_upgrade_en;
 	debug("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
 
 	if (stored_bootdelay != -1 && s && !abortboot(stored_bootdelay)) {
+		/*tftp download*/
+		if (!check_test() && !check_config()) {
+			tmp = getenv("tftp_upgrade");
+			tftp_upgrade_en = tmp ? (int)simple_strtol(tmp, NULL, 10) : 0;
+			if(tftp_upgrade_en==1)
+				auto_update_by_tftp();
+		}
 #if defined(CONFIG_AUTOBOOT_KEYED) && !defined(CONFIG_AUTOBOOT_KEYED_CTRLC)
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 #endif

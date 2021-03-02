@@ -50,7 +50,7 @@
 #include "armada-372x.dtsi"
 
 / {
-	model = "Marvell Armada 3720 Community Board ESPRESSOBin";
+	model = "GL.iNet GL-MV1000";
 	compatible = "marvell,armada-3720-espressobin", "marvell,armada3720", "marvell,armada3710";
 
 	chosen {

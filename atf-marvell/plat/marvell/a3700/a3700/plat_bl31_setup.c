@@ -61,6 +61,7 @@ static void pass_dram_sys_info(struct dram_win_map *win_map)
 /* This routine does MPP initialization */
 static void marvell_bl31_mpp_init(void)
 {
+	//13830 10 i2c
 	mmio_clrbits_32(MVEBU_NB_GPIO_SEL_REG, 1 << MVEBU_GPIO_TW1_GPIO_EN_OFF);
 
 	/* Set hiden GPIO setting for SPI.
@@ -74,7 +75,11 @@ static void marvell_bl31_mpp_init(void)
 	 * And anyway, this bit value sould be 1 in all modes,
 	 * so here we does not judge boot mode and set this bit to 1 always.
 	 */
+	//13804 28 spi
 	mmio_setbits_32(MVEBU_NB_GPIO_OUTPUT_EN_HIGH_REG, 1 << MVEBU_GPIO_NB_SPI_PIN_MODE_OFF);
+	mmio_setbits_32(MVEBU_NB_GPIO_REG_BASE + 0x0, 1 << 11);
+	mmio_setbits_32(MVEBU_NB_GPIO_REG_BASE + 0x0, 1 << 12);
+	mmio_setbits_32(MVEBU_NB_GPIO_REG_BASE + 0x0, 1 << 13);
 }
 
 /* This function overruns the same function in marvell_bl31_setup.c */

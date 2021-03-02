@@ -17,6 +17,7 @@ obj-$(CONFIG_CMD_NET)  += eth-uclass.o
 else
 obj-$(CONFIG_CMD_NET)  += eth_legacy.o
 endif
+obj-y  += httpd.o
 obj-$(CONFIG_CMD_NET)  += eth_common.o
 obj-$(CONFIG_CMD_LINK_LOCAL) += link_local.o
 obj-$(CONFIG_CMD_NET)  += net.o
