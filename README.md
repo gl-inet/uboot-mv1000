@@ -32,4 +32,4 @@ make DEBUG=1 USE_COHERENT_MEM=0 LOG_LEVEL=20 SECURE=0 CLOCKSPRESET=CPU_1000_DDR_
 
 ### Uboot image:
 
-~/uboot-mv1000/build/a3700/debug/flash-image.bin
+~/uboot-mv1000/atf-marvell/build/a3700/debug/flash-image.bin
